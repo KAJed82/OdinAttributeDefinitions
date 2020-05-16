@@ -1,0 +1,6 @@
+%float
++new LabelWidthAttribute( 80 )
+%bool
++new ColoredToggleAttribute()
+%Bobby
+*so+new LabelTextAttribute( "Not so" )
