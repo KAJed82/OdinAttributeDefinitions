@@ -57,7 +57,18 @@ public class OdinAttributeDefinitionFileImporter : ScriptedImporter
 					break;
 				}
 
-				currentDefinition.selfAttributeStrings.Add( substring );
+				currentDefinition.addedSelfAttributeStrings.Add( substring );
+			}
+			else if ( line[0] == '-' )
+			{
+				var substring = line.Substring( 1 );
+				if ( currentDefinition == null )
+				{
+					Debug.LogError( $"{substring}: no active type." );
+					break;
+				}
+
+				currentDefinition.removedSelfAttributeStrings.Add( substring );
 			}
 			// TODO: Add '-' to allow removing attributes
 			else if ( line[0] == '*' ) // *memberName+new LabelWidthAttribute
@@ -90,8 +101,17 @@ public class OdinAttributeDefinitionFileImporter : ScriptedImporter
 
 				string attributeSubstring = substring.Substring( useIndex + 1 );
 
-				if ( !currentDefinition.memberAttributeStrings.TryGetValue( memberSubstring, out var attributes ) )
-					currentDefinition.memberAttributeStrings[memberSubstring] = attributes = new List<string>();
+				List<string> attributes = null;
+				if ( plusIndex >= 0 )
+				{
+					if ( !currentDefinition.addedMemberAttributeStrings.TryGetValue( memberSubstring, out attributes ) )
+						currentDefinition.addedMemberAttributeStrings[memberSubstring] = attributes = new List<string>();
+				}
+				else
+				{
+					if ( !currentDefinition.removedMemberAttributeStrings.TryGetValue( memberSubstring, out attributes ) )
+						currentDefinition.removedMemberAttributeStrings[memberSubstring] = attributes = new List<string>();
+				}
 
 				attributes.Add( attributeSubstring );
 			}

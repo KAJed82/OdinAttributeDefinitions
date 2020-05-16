@@ -19,19 +19,47 @@ public class OdinAttributeDefinition : SerializedScriptableObject
 
 	[DelayedProperty]
 	[OnValueChanged( "OnSelfAttributesChanged", true )]
-	[SerializeField] protected internal List<string> selfAttributeStrings = new List<string>();
+	[SerializeField] protected internal List<string> addedSelfAttributeStrings = new List<string>();
 
 	[ListDrawerSettings( IsReadOnly = true )]
 	[ShowInInspector]
-	protected List<Attribute> selfAttributes = new List<Attribute>();
-	public IReadOnlyCollection<Attribute> SelfAttributes => selfAttributes;
+	protected List<Attribute> addedSelfAttributes = new List<Attribute>();
+	public IReadOnlyCollection<Attribute> AddedSelfAttributes => addedSelfAttributes;
 
-	[SerializeField] protected internal Dictionary<string, List<string>> memberAttributeStrings = new Dictionary<string, List<string>>();
+	[DelayedProperty]
+	[OnValueChanged( "OnSelfAttributesChanged", true )]
+	[SerializeField] protected internal List<string> removedSelfAttributeStrings = new List<string>();
+
+	[ListDrawerSettings( IsReadOnly = true )]
+	[ShowInInspector]
+	protected List<Attribute> removedSelfAttributes = new List<Attribute>();
+	public IReadOnlyCollection<Attribute> RemovedSelfAttributes => removedSelfAttributes;
+
+	[SerializeField] protected internal Dictionary<string, List<string>> addedMemberAttributeStrings = new Dictionary<string, List<string>>();
 
 	[DisableIf( "@true" )]
 	[ShowInInspector]
-	protected Dictionary<string, List<Attribute>> memberAttributes = new Dictionary<string, List<Attribute>>();
-	public Dictionary<string, List<Attribute>> MemberAttributes => memberAttributes;
+	protected Dictionary<string, List<Attribute>> addedMemberAttributes = new Dictionary<string, List<Attribute>>();
+
+	public IReadOnlyCollection<Attribute> GetAddedMemberAttributes( string memberName )
+	{
+		List<Attribute> attributes;
+		addedMemberAttributes.TryGetValue( memberName, out attributes );
+		return attributes;
+	}
+
+	[SerializeField] protected internal Dictionary<string, List<string>> removedMemberAttributeStrings = new Dictionary<string, List<string>>();
+
+	[DisableIf( "@true" )]
+	[ShowInInspector]
+	protected Dictionary<string, List<Attribute>> removedMemberAttributes = new Dictionary<string, List<Attribute>>();
+
+	public IReadOnlyCollection<Attribute> GetRemovedMemberAttributes( string memberName )
+	{
+		List<Attribute> attributes;
+		removedMemberAttributes.TryGetValue( memberName, out attributes );
+		return attributes;
+	}
 
 	[AsErrorList]
 	[ShowInInspector]
@@ -44,14 +72,16 @@ public class OdinAttributeDefinition : SerializedScriptableObject
 
 	protected override void OnAfterDeserialize()
 	{
-		if ( selfAttributes == null )
-			selfAttributes = new List<Attribute>();
-		if ( memberAttributes == null )
-			memberAttributes = new Dictionary<string, List<Attribute>>();
+		if ( addedSelfAttributes == null )
+			addedSelfAttributes = new List<Attribute>();
+		if ( addedMemberAttributes == null )
+			addedMemberAttributes = new Dictionary<string, List<Attribute>>();
 
 		errors.Clear();
-		selfAttributes.Clear();
-		foreach ( var s in selfAttributeStrings )
+
+		#region Added Self Attributes
+		addedSelfAttributes.Clear();
+		foreach ( var s in addedSelfAttributeStrings )
 		{
 			if ( string.IsNullOrEmpty( s ) )
 				continue;
@@ -68,15 +98,41 @@ public class OdinAttributeDefinition : SerializedScriptableObject
 				if ( attribute == null )
 					errors.Add( $"{s}: Did not result in an attribute" );
 				else
-					selfAttributes.Add( attribute );
+					addedSelfAttributes.Add( attribute );
 			}
 		}
+		#endregion
 
-		memberAttributes.Clear();
-		foreach ( var kvp in memberAttributeStrings )
+		#region Removed Self Attributes
+		removedSelfAttributes.Clear();
+		foreach ( var s in removedSelfAttributeStrings )
 		{
-			if ( !memberAttributes.TryGetValue( kvp.Key, out var attributes ) )
-				memberAttributes[kvp.Key] = attributes = new List<Attribute>();
+			if ( string.IsNullOrEmpty( s ) )
+				continue;
+
+			// Ideally these should be done in context of the property, right?
+			var attributeDelegate = ExpressionUtility.ParseExpression( s, true, null, out var error, false );
+			if ( !string.IsNullOrEmpty( error ) )
+			{
+				errors.Add( $"{s}: {error}" );
+			}
+			else
+			{
+				Attribute attribute = attributeDelegate.DynamicInvoke() as Attribute;
+				if ( attribute == null )
+					errors.Add( $"{s}: Did not result in an attribute" );
+				else
+					removedSelfAttributes.Add( attribute );
+			}
+		}
+		#endregion
+
+		#region Added Member Attributes
+		addedMemberAttributes.Clear();
+		foreach ( var kvp in addedMemberAttributeStrings )
+		{
+			if ( !addedMemberAttributes.TryGetValue( kvp.Key, out var attributes ) )
+				addedMemberAttributes[kvp.Key] = attributes = new List<Attribute>();
 
 			foreach ( var s in kvp.Value )
 			{
@@ -99,12 +155,37 @@ public class OdinAttributeDefinition : SerializedScriptableObject
 				}
 			}
 		}
-	}
+		#endregion
 
-	protected override void OnBeforeSerialize()
-	{
-		var thing = ExpressionUtility.ParseExpression( "new LabelAboveAttribute()", true, null, out var error );
-		var thingResult = thing.DynamicInvoke();
+		#region Removed Member Attributes
+		removedMemberAttributes.Clear();
+		foreach ( var kvp in removedMemberAttributeStrings )
+		{
+			if ( !removedMemberAttributes.TryGetValue( kvp.Key, out var attributes ) )
+				removedMemberAttributes[kvp.Key] = attributes = new List<Attribute>();
+
+			foreach ( var s in kvp.Value )
+			{
+				if ( string.IsNullOrEmpty( s ) )
+					continue;
+
+				// Ideally these should be done in context of the property, right?
+				var attributeDelegate = ExpressionUtility.ParseExpression( s, true, null, out var error, false );
+				if ( !string.IsNullOrEmpty( error ) )
+				{
+					errors.Add( $"{s}: {error}" );
+				}
+				else
+				{
+					Attribute attribute = attributeDelegate.DynamicInvoke() as Attribute;
+					if ( attribute == null )
+						errors.Add( $"{s}: Did not result in an attribute" );
+					else
+						attributes.Add( attribute );
+				}
+			}
+		}
+		#endregion
 	}
 
 	public static List<OdinAttributeDefinition> GetDefinitions<T>()
@@ -127,7 +208,7 @@ public class OdinAttributeDefinition : SerializedScriptableObject
 			.ToList();
 		}
 		return allDefinitions
-			.Where( x => type == x.Type ) // TODO: Allow definitions to apply to subclasses
+			.Where( x => type.ImplementsOrInherits( x.type ) ) // TODO: Allow definitions to apply to subclasses
 			.ToList();
 	}
 }
