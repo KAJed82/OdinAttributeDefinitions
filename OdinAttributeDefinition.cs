@@ -112,16 +112,31 @@ public class OdinAttributeDefinition : SerializedScriptableObject
 		return GetDefinitions( typeof( T ) );
 	}
 
+	protected internal static List<OdinAttributeDefinition> allDefinitions;
+
 	public static List<OdinAttributeDefinition> GetDefinitions( Type type )
 	{
-		return AssetDatabase
+		if ( allDefinitions == null )
+		{
+			allDefinitions = AssetDatabase
 			.FindAssets( $"t:{typeof( OdinAttributeDefinition )}" )
 			.Select( x => AssetDatabase.GUIDToAssetPath( x ) )
 			.Distinct()
 			.SelectMany( x => AssetDatabase.LoadAllAssetsAtPath( x ) )
 			.OfType<OdinAttributeDefinition>()
+			.ToList();
+		}
+		return allDefinitions
 			.Where( x => type == x.Type ) // TODO: Allow definitions to apply to subclasses
 			.ToList();
+	}
+}
+
+public class OdinAttributeDefinitionPostProcessor : AssetPostprocessor
+{
+	static void OnPostprocessAllAssets( string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths )
+	{
+		OdinAttributeDefinition.allDefinitions = null;
 	}
 }
 

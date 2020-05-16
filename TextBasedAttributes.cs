@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
@@ -13,12 +14,22 @@ public class Bobby
 	public int so;
 }
 
-public class TextBasedAttributes : MonoBehaviour
+public class Sometimes
+{
+	public int hello;
+}
+
+public class TextBasedAttributes : SerializedMonoBehaviour
 {
 	public bool check;
 	public float bob;
 
 	public Bobby yup;
+
+	[System.NonSerialized]
+	public Sometimes some;
+	[System.NonSerialized]
+	public List<Sometimes> more;
 }
 
 public class TextBasedAttributeProcessor<T> : OdinAttributeProcessor<T>
