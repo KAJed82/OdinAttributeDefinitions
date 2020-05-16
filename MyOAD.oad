@@ -1,6 +1,8 @@
 %float
 +new LabelWidthAttribute( 80 )
++new FoldoutGroupAttribute( "FoldedFloats", 0 )
 %bool
 +new ColoredToggleAttribute()
++new LabelWidthAttribute( 80 )
 %Bobby
 *so+new LabelTextAttribute( "Not so" )
