@@ -140,11 +140,11 @@ public class TextBasedAttributeProcessor<T> : OdinAttributeProcessor<T>
 				var property = member as PropertyInfo;
 				foreach ( var definition in OdinAttributeDefinition.GetDefinitions( property.PropertyType ) )
 				{
-					foreach ( var a in definition.RemovedSelfAttributes )
+					foreach ( var t in definition.RemovedSelfAttributes )
 					{
 						for ( int i = attributes.Count - 1; i >= 0; --i )
 						{
-							if ( attributes[i].GetType() == a.GetType() )
+							if ( attributes[i].GetType() == t )
 								attributes.RemoveAt( i );
 						}
 					}
@@ -158,11 +158,11 @@ public class TextBasedAttributeProcessor<T> : OdinAttributeProcessor<T>
 			var memberAttributes = definition.GetRemovedMemberAttributes( member.Name );
 			if ( memberAttributes != null )
 			{
-				foreach ( var a in memberAttributes )
+				foreach ( var t in memberAttributes )
 				{
 					for ( int i = attributes.Count - 1; i >= 0; --i )
 					{
-						if ( attributes[i].GetType() == a.GetType() )
+						if ( attributes[i].GetType() == t )
 							attributes.RemoveAt( i );
 					}
 				}

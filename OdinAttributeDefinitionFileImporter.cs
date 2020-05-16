@@ -33,7 +33,7 @@ public class OdinAttributeDefinitionFileImporter : ScriptedImporter
 			if ( line[0] == '%' )
 			{
 				var substring = line.Substring( 1 );
-				var type = GetTypeFromString( substring );
+				var type = OdinAttributeDefinition.GetTypeFromString( substring );
 				if ( type == null )
 				{
 					Debug.LogError( $"{substring} could not be converted to a type." );
@@ -116,20 +116,5 @@ public class OdinAttributeDefinitionFileImporter : ScriptedImporter
 				attributes.Add( attributeSubstring );
 			}
 		}
-	}
-
-	private static readonly TwoWaySerializationBinder Binder = new DefaultSerializationBinder();
-
-	protected static Type GetTypeFromString( string typeString )
-	{
-		Type type = Binder.BindToType( typeString );
-
-		if ( type == null )
-			type = AssemblyUtilities.GetTypeByCachedFullName( typeString );
-
-		if ( type == null )
-			ExpressionUtility.TryParseTypeNameAsCSharpIdentifier( typeString, out type );
-
-		return type;
 	}
 }

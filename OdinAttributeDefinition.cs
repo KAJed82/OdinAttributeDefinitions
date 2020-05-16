@@ -32,8 +32,8 @@ public class OdinAttributeDefinition : SerializedScriptableObject
 
 	[ListDrawerSettings( IsReadOnly = true )]
 	[ShowInInspector]
-	protected List<Attribute> removedSelfAttributes = new List<Attribute>();
-	public IReadOnlyCollection<Attribute> RemovedSelfAttributes => removedSelfAttributes;
+	protected List<Type> removedSelfAttributes = new List<Type>();
+	public IReadOnlyCollection<Type> RemovedSelfAttributes => removedSelfAttributes;
 
 	[SerializeField] protected internal Dictionary<string, List<string>> addedMemberAttributeStrings = new Dictionary<string, List<string>>();
 
@@ -52,11 +52,11 @@ public class OdinAttributeDefinition : SerializedScriptableObject
 
 	[DisableIf( "@true" )]
 	[ShowInInspector]
-	protected Dictionary<string, List<Attribute>> removedMemberAttributes = new Dictionary<string, List<Attribute>>();
+	protected Dictionary<string, List<Type>> removedMemberAttributes = new Dictionary<string, List<Type>>();
 
-	public IReadOnlyCollection<Attribute> GetRemovedMemberAttributes( string memberName )
+	public IReadOnlyCollection<Type> GetRemovedMemberAttributes( string memberName )
 	{
-		List<Attribute> attributes;
+		List<Type> attributes;
 		removedMemberAttributes.TryGetValue( memberName, out attributes );
 		return attributes;
 	}
@@ -110,19 +110,13 @@ public class OdinAttributeDefinition : SerializedScriptableObject
 			if ( string.IsNullOrEmpty( s ) )
 				continue;
 
-			// Ideally these should be done in context of the property, right?
-			var attributeDelegate = ExpressionUtility.ParseExpression( s, true, null, out var error, false );
-			if ( !string.IsNullOrEmpty( error ) )
+			if ( type == null )
 			{
-				errors.Add( $"{s}: {error}" );
+				errors.Add( $"{s}: No matching type found." );
 			}
 			else
 			{
-				Attribute attribute = attributeDelegate.DynamicInvoke() as Attribute;
-				if ( attribute == null )
-					errors.Add( $"{s}: Did not result in an attribute" );
-				else
-					removedSelfAttributes.Add( attribute );
+				removedSelfAttributes.Add( type );
 			}
 		}
 		#endregion
@@ -139,7 +133,6 @@ public class OdinAttributeDefinition : SerializedScriptableObject
 				if ( string.IsNullOrEmpty( s ) )
 					continue;
 
-				// Ideally these should be done in context of the property, right?
 				var attributeDelegate = ExpressionUtility.ParseExpression( s, true, null, out var error, false );
 				if ( !string.IsNullOrEmpty( error ) )
 				{
@@ -162,26 +155,21 @@ public class OdinAttributeDefinition : SerializedScriptableObject
 		foreach ( var kvp in removedMemberAttributeStrings )
 		{
 			if ( !removedMemberAttributes.TryGetValue( kvp.Key, out var attributes ) )
-				removedMemberAttributes[kvp.Key] = attributes = new List<Attribute>();
+				removedMemberAttributes[kvp.Key] = attributes = new List<Type>();
 
 			foreach ( var s in kvp.Value )
 			{
 				if ( string.IsNullOrEmpty( s ) )
 					continue;
 
-				// Ideally these should be done in context of the property, right?
-				var attributeDelegate = ExpressionUtility.ParseExpression( s, true, null, out var error, false );
-				if ( !string.IsNullOrEmpty( error ) )
+				var type = GetTypeFromString( s );
+				if ( type == null )
 				{
-					errors.Add( $"{s}: {error}" );
+					errors.Add( $"{s}: No matching type found." );
 				}
 				else
 				{
-					Attribute attribute = attributeDelegate.DynamicInvoke() as Attribute;
-					if ( attribute == null )
-						errors.Add( $"{s}: Did not result in an attribute" );
-					else
-						attributes.Add( attribute );
+					attributes.Add( type );
 				}
 			}
 		}
@@ -211,11 +199,26 @@ public class OdinAttributeDefinition : SerializedScriptableObject
 			.Where( x => type.ImplementsOrInherits( x.type ) ) // TODO: Allow definitions to apply to subclasses
 			.ToList();
 	}
+
+	private static readonly TwoWaySerializationBinder Binder = new DefaultSerializationBinder();
+
+	protected internal static Type GetTypeFromString( string typeString )
+	{
+		Type type = Binder.BindToType( typeString );
+
+		if ( type == null )
+			type = AssemblyUtilities.GetTypeByCachedFullName( typeString );
+
+		if ( type == null )
+			ExpressionUtility.TryParseTypeNameAsCSharpIdentifier( typeString, out type );
+
+		return type;
+	}
 }
 
 public class OdinAttributeDefinitionPostProcessor : AssetPostprocessor
 {
-	static void OnPostprocessAllAssets( string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths )
+	private static void OnPostprocessAllAssets( string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths )
 	{
 		OdinAttributeDefinition.allDefinitions = null;
 	}
