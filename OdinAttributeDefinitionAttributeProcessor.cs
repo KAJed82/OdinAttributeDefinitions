@@ -21,7 +21,7 @@ namespace OdinAttributeDefinitions
 
 		public override void ProcessSelfAttributes( InspectorProperty property, List<Attribute> attributes )
 		{
-			List<OdinAttributeDefinition> definitions = OdinAttributeDefinition.GetDefinitions<T>();
+			var definitions = OdinAttributeDefinition.GetDefinitions<T>();
 
 			foreach ( var definition in definitions )
 			{
@@ -44,7 +44,7 @@ namespace OdinAttributeDefinitions
 
 		public override void ProcessChildMemberAttributes( InspectorProperty parentProperty, MemberInfo member, List<Attribute> attributes )
 		{
-			List<OdinAttributeDefinition> definitions = OdinAttributeDefinition.GetDefinitions<T>();
+			var definitions = OdinAttributeDefinition.GetDefinitions<T>();
 
 			#region Add PropertyGroup Attributes
 			// get list of definitions for this type

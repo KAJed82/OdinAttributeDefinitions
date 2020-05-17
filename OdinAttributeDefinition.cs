@@ -97,7 +97,7 @@ namespace OdinAttributeDefinitions
 					if ( attribute == null )
 					{
 						errors.Add( $"{s}: Did not result in an attribute" );
-						Debug.LogError( errors[errors.Count-1], this );
+						Debug.LogError( errors[errors.Count - 1], this );
 					}
 					else
 					{
@@ -187,17 +187,20 @@ namespace OdinAttributeDefinitions
 			#endregion
 		}
 
-		public static List<OdinAttributeDefinition> GetDefinitions<T>()
+		public static IReadOnlyCollection<OdinAttributeDefinition> GetDefinitions<T>()
 		{
 			return GetDefinitions( typeof( T ) );
 		}
 
 		protected internal static List<OdinAttributeDefinition> allDefinitions;
+		protected static Dictionary<Type, List<OdinAttributeDefinition>> typeDefinitions;
 
-		public static List<OdinAttributeDefinition> GetDefinitions( Type type )
+		public static IReadOnlyCollection<OdinAttributeDefinition> GetDefinitions( Type type )
 		{
-			if ( allDefinitions == null )
+			if ( allDefinitions == null || typeDefinitions == null )
 			{
+				typeDefinitions = new Dictionary<Type, List<OdinAttributeDefinition>>();
+
 				allDefinitions = AssetDatabase
 				.FindAssets( $"t:{typeof( OdinAttributeDefinition )}" )
 				.Select( x => AssetDatabase.GUIDToAssetPath( x ) )
@@ -206,9 +209,15 @@ namespace OdinAttributeDefinitions
 				.OfType<OdinAttributeDefinition>()
 				.ToList();
 			}
-			return allDefinitions
-				.Where( x => type.ImplementsOrInherits( x.type ) ) // TODO: Allow definitions to apply to subclasses
+
+			if ( !typeDefinitions.TryGetValue( type, out var definitions ) )
+			{
+				typeDefinitions[type] = definitions = allDefinitions
+				.Where( x => type.ImplementsOrInherits( x.type ) )
 				.ToList();
+			}
+
+			return definitions;
 		}
 
 		private static readonly TwoWaySerializationBinder Binder = new DefaultSerializationBinder();
