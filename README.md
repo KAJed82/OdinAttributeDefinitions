@@ -19,7 +19,7 @@ Write the attribute type you want to remove and all instances will be removed fr
 Comment<br>
 
 <h1>Example</h1>
-filename: MyAttributes.**oad**
+filename: MyAttributes.**oad**<br>
 ~~~~
 ; This is my custom type
 %MyCustomType
