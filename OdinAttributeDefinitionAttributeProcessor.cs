@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 
 namespace OdinAttributeDefinitions
@@ -47,7 +49,7 @@ namespace OdinAttributeDefinitions
 
 		public override void ProcessChildMemberAttributes( InspectorProperty parentProperty, MemberInfo member, List<Attribute> attributes )
 		{
-			#region Add Attributes
+			#region Add PropertyGroup Attributes
 			// get list of definitions for this type
 			switch ( member.MemberType )
 			{
@@ -56,7 +58,7 @@ namespace OdinAttributeDefinitions
 
 					foreach ( var definition in OdinAttributeDefinition.GetDefinitions( field.FieldType ) )
 					{
-						foreach ( var a in definition.AddedSelfAttributes )
+						foreach ( var a in definition.AddedSelfAttributes.OfType<PropertyGroupAttribute>() )
 							attributes.Add( a );
 					}
 					break;
@@ -66,7 +68,7 @@ namespace OdinAttributeDefinitions
 
 					foreach ( var definition in OdinAttributeDefinition.GetDefinitions( property.PropertyType ) )
 					{
-						foreach ( var a in definition.AddedSelfAttributes )
+						foreach ( var a in definition.AddedSelfAttributes.OfType<PropertyGroupAttribute>() )
 							attributes.Add( a );
 					}
 					break;
