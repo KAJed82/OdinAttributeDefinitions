@@ -38,3 +38,34 @@ Comment<br>
 
 *custom+new PropertyOrderAttribute( -1 )
 ~~~~
+~~~~
+[System.Serializable]
+public class Foo
+{
+	public int data;
+}
+
+[System.Serializable]
+public class Bar
+{
+	public int data;
+}
+
+[System.Serializable]
+public class MyCustomType
+{
+	public float someField;
+
+	public string someOtherTextMember = "defaultText";
+}
+
+public class TextBasedAttributes : SerializedMonoBehaviour
+{
+	public Foo foo;
+	public Bar bar;
+
+	public MyCustomType custom;
+}
+~~~~
+
+![Example](Images~/TextBasedAttributesExample.png?raw=true "Example")
