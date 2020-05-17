@@ -1,13 +1,25 @@
 <h1>Usage</h1>
 
-**%TYPENAME** - Starts a set of attributes / member attributes for a type<br>
-**+new STYLINGATTRIBUTE( params )** - Write the constructor for the attribute you want to add to this type (no support for default params yet)<br>
-**-STYLINGATTRIBUTE** - Write the attribute type you want to remove and all instances will be removed from this type<br>
+<h3>%TYPENAME</h3> 
+Starts a set of attributes / member attributes for a type<br>
+
+<h3>+new STYLINGATTRIBUTE( params )</h3>
+Write the constructor for the attribute you want to add to this type
+
+<h3>-STYLINGATTRIBUTE</h3>
+Write the attribute type you want to remove and all instances will be removed from this type<br>
+
 <br>
-**\*memberName+new STYLINGATTRIBUTE( params )** - Write the constructor for the attribute you want to add to members with this name (no support for default params yet)<br>
-**\*memberName-STYLINGATTRIBUTE** - Write the attribute type you want to remove and all instances will be removed from members with this name<br>
+
+<h3>\*memberName+new STYLINGATTRIBUTE( params )</h3>
+Write the constructor for the attribute you want to add to members with this name
+
+<h3>\*memberName-STYLINGATTRIBUTE</h3>
+Write the attribute type you want to remove and all instances will be removed from members with this name<br>
 <br>
-**; Some comment text** - Comment<br>
+
+<h3>; Some comment text</h3>
+Comment<br>
 
 <h1>Example</h1>
 
