@@ -10,7 +10,6 @@ using UnityEngine;
 
 namespace OdinAttributeDefinitions
 {
-	[CreateAssetMenu]
 	public class OdinAttributeDefinition : SerializedScriptableObject
 	{
 		[OdinSerialize] protected internal Type type;
