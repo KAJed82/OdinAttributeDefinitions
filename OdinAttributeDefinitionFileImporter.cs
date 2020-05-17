@@ -25,8 +25,12 @@ namespace OdinAttributeDefinitions
 
 			Type currentType = null;
 			OdinAttributeDefinition currentDefinition = null;
-			foreach ( var line in lines )
+
+			for ( int lineIndex = 0; lineIndex < lines.Length; ++lineIndex )
 			{
+				// Strip leading spaces
+				string line = lines[lineIndex].Trim();
+
 				// If the first character is a % sign then it's a type
 				if ( line[0] == '%' )
 				{
@@ -112,6 +116,10 @@ namespace OdinAttributeDefinitions
 					}
 
 					attributes.Add( attributeSubstring );
+				}
+				else if ( line[0] == ';' )
+				{
+					continue;
 				}
 			}
 		}
