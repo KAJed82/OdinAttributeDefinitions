@@ -21,15 +21,20 @@ Comment<br>
 <h1>Example</h1>
 
 ~~~~
-%float
-+new LabelWidthAttribute(60)
-+new GUIColorAttribute(1,0,0,1)
-
-%int
-+new LabelWidthAttribute(60)
-+new GUIColorAttribute(0,1,0,1)
-
 ; This is my custom type
 %MyCustomType
++new HideLabelAttribute()
++new BoxGroupAttribute( "Custom", true, false, 0 )
 *someField+new LabelTextAttribute( "$someOtherTextMember" )
+
+%TextBasedAttributes
+*foo+new HorizontalGroupAttribute(0.5f,0,0,0)
+*foo+new InlinePropertyAttribute()
+*foo+new LabelWidthAttribute(40)
+
+*bar+new HorizontalGroupAttribute(0.5f,0,0,0)
+*bar+new InlinePropertyAttribute()
+*bar+new LabelWidthAttribute(40)
+
+*custom+new PropertyOrderAttribute( -1 )
 ~~~~
