@@ -9,13 +9,6 @@ namespace OdinAttributeDefinitions
 {
 	public class OdinAttributeDefinitionAttributeProcessor<T> : OdinAttributeProcessor<T>
 	{
-		protected List<OdinAttributeDefinition> definitions;
-
-		public OdinAttributeDefinitionAttributeProcessor()
-		{
-			definitions = OdinAttributeDefinition.GetDefinitions<T>();
-		}
-
 		public override bool CanProcessSelfAttributes( InspectorProperty property )
 		{
 			return true;
@@ -28,6 +21,8 @@ namespace OdinAttributeDefinitions
 
 		public override void ProcessSelfAttributes( InspectorProperty property, List<Attribute> attributes )
 		{
+			List<OdinAttributeDefinition> definitions = OdinAttributeDefinition.GetDefinitions<T>();
+
 			foreach ( var definition in definitions )
 			{
 				foreach ( var a in definition.AddedSelfAttributes )
@@ -49,6 +44,8 @@ namespace OdinAttributeDefinitions
 
 		public override void ProcessChildMemberAttributes( InspectorProperty parentProperty, MemberInfo member, List<Attribute> attributes )
 		{
+			List<OdinAttributeDefinition> definitions = OdinAttributeDefinition.GetDefinitions<T>();
+
 			#region Add PropertyGroup Attributes
 			// get list of definitions for this type
 			switch ( member.MemberType )

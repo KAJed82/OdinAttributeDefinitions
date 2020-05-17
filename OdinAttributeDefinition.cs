@@ -89,14 +89,20 @@ namespace OdinAttributeDefinitions
 				if ( !string.IsNullOrEmpty( error ) )
 				{
 					errors.Add( $"{s}: {error}" );
+					Debug.LogError( errors[errors.Count - 1], this );
 				}
 				else
 				{
 					Attribute attribute = attributeDelegate.DynamicInvoke() as Attribute;
 					if ( attribute == null )
+					{
 						errors.Add( $"{s}: Did not result in an attribute" );
+						Debug.LogError( errors[errors.Count-1], this );
+					}
 					else
+					{
 						addedSelfAttributes.Add( attribute );
+					}
 				}
 			}
 			#endregion
@@ -111,6 +117,7 @@ namespace OdinAttributeDefinitions
 				if ( type == null )
 				{
 					errors.Add( $"{s}: No matching type found." );
+					Debug.LogError( errors[errors.Count - 1], this );
 				}
 				else
 				{
@@ -134,15 +141,20 @@ namespace OdinAttributeDefinitions
 					var attributeDelegate = ExpressionUtility.ParseExpression( s, true, null, out var error, false );
 					if ( !string.IsNullOrEmpty( error ) )
 					{
-						errors.Add( $"{s}: {error}" );
+						errors.Add( $"{s}: {error}" ); Debug.LogError( errors[errors.Count - 1], this );
 					}
 					else
 					{
 						Attribute attribute = attributeDelegate.DynamicInvoke() as Attribute;
 						if ( attribute == null )
+						{
 							errors.Add( $"{s}: Did not result in an attribute" );
+							Debug.LogError( errors[errors.Count - 1], this );
+						}
 						else
+						{
 							attributes.Add( attribute );
+						}
 					}
 				}
 			}
@@ -164,6 +176,7 @@ namespace OdinAttributeDefinitions
 					if ( type == null )
 					{
 						errors.Add( $"{s}: No matching type found." );
+						Debug.LogError( errors[errors.Count - 1], this );
 					}
 					else
 					{
