@@ -1,7 +1,12 @@
-﻿using System;
+﻿#if ODIN_INSPECTOR_3
+using Sirenix.OdinInspector.Editor.ValueResolvers;
+#endif
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Sirenix.OdinInspector;
+using Sirenix.OdinInspector.Editor;
 using Sirenix.Serialization;
 using Sirenix.Utilities;
 using Sirenix.Utilities.Editor.Expressions;
@@ -16,22 +21,63 @@ namespace OdinAttributeDefinitions
 		public Type Type => type;
 
 		[DelayedProperty]
-		[OnValueChanged( "OnSelfAttributesChanged", true )]
+		[OnValueChanged( nameof( OnSerializationChanged ), true )]
+		[SerializeField] protected internal string requiredCondition = string.Empty;
+		public string RequiredCondition => requiredCondition;
+
+		public bool MatchesCondition( InspectorProperty property )
+		{
+#if ODIN_INSPECTOR_3
+			if ( string.IsNullOrEmpty( requiredCondition ) )
+				return true;
+
+			// Cannot be cached very well unless we use a property resolver instead which is much messier
+			var conditionResolver = ValueResolver.Get( property, RequiredCondition, true );
+
+			conditionResolver.Context.Property = property;
+			if ( conditionResolver.HasError )
+			{
+				Debug.LogError( conditionResolver.ErrorMessage, this );
+				return true; // Default to true
+			}
+
+			return conditionResolver.GetValue();
+#else
+			return true;
+#endif
+		}
+
+		#region Added Self Attributes
+
+		[DelayedProperty]
+		[OnValueChanged( nameof( OnSerializationChanged ), true )]
 		[SerializeField] protected internal List<string> addedSelfAttributeStrings = new List<string>();
 
 		[ListDrawerSettings( IsReadOnly = true )]
+		[DisableIf( "@true" )]
 		[ShowInInspector]
 		protected List<Attribute> addedSelfAttributes = new List<Attribute>();
-		public IReadOnlyCollection<Attribute> AddedSelfAttributes => addedSelfAttributes;
+		public IReadOnlyList<Attribute> AddedSelfAttributes => addedSelfAttributes;
+
+		#endregion
+
+		#region Removed Self Attributes
+		[SerializeField] protected internal bool removeAllSelfAttributes = false;
+		public bool RemoveAllSelfAttributes => removeAllSelfAttributes;
 
 		[DelayedProperty]
-		[OnValueChanged( "OnSelfAttributesChanged", true )]
+		[OnValueChanged( nameof( OnSerializationChanged ), true )]
 		[SerializeField] protected internal List<string> removedSelfAttributeStrings = new List<string>();
 
 		[ListDrawerSettings( IsReadOnly = true )]
+		[DisableIf( "@true" )]
 		[ShowInInspector]
 		protected List<Type> removedSelfAttributes = new List<Type>();
-		public IReadOnlyCollection<Type> RemovedSelfAttributes => removedSelfAttributes;
+		public IReadOnlyList<Type> RemovedSelfAttributes => removedSelfAttributes;
+
+		#endregion
+
+		#region Added Member Attributes
 
 		[SerializeField] protected internal Dictionary<string, List<string>> addedMemberAttributeStrings = new Dictionary<string, List<string>>();
 
@@ -39,12 +85,18 @@ namespace OdinAttributeDefinitions
 		[ShowInInspector]
 		protected Dictionary<string, List<Attribute>> addedMemberAttributes = new Dictionary<string, List<Attribute>>();
 
-		public IReadOnlyCollection<Attribute> GetAddedMemberAttributes( string memberName )
+		public IReadOnlyList<Attribute> GetAddedMemberAttributes( string memberName )
 		{
 			List<Attribute> attributes;
 			addedMemberAttributes.TryGetValue( memberName, out attributes );
 			return attributes;
 		}
+
+		#endregion
+
+		#region Removed Member Attributes
+		[SerializeField] protected internal bool removeAllMemberAttributes = false;
+		public bool RemoveAllMemberAttributes => removeAllMemberAttributes;
 
 		[SerializeField] protected internal Dictionary<string, List<string>> removedMemberAttributeStrings = new Dictionary<string, List<string>>();
 
@@ -52,18 +104,25 @@ namespace OdinAttributeDefinitions
 		[ShowInInspector]
 		protected Dictionary<string, List<Type>> removedMemberAttributes = new Dictionary<string, List<Type>>();
 
-		public IReadOnlyCollection<Type> GetRemovedMemberAttributes( string memberName )
+		public IReadOnlyList<Type> GetRemovedMemberAttributes( string memberName )
 		{
 			List<Type> attributes;
 			removedMemberAttributes.TryGetValue( memberName, out attributes );
 			return attributes;
 		}
 
+		[SerializeField] protected internal List<string> removeMemberAttributesAll = new List<string>();
+		public bool GetRemovedMemberAllAttributes( string memberName )
+		{
+			return removeMemberAttributesAll.Contains( memberName );
+		}
+		#endregion
+
 		[AsErrorList]
 		[ShowInInspector]
 		protected List<string> errors = new List<string>();
 
-		protected void OnSelfAttributesChanged()
+		protected void OnSerializationChanged()
 		{
 			OnAfterDeserialize();
 		}
@@ -187,7 +246,7 @@ namespace OdinAttributeDefinitions
 			#endregion
 		}
 
-		public static IReadOnlyCollection<OdinAttributeDefinition> GetDefinitions<T>()
+		public static IReadOnlyList<OdinAttributeDefinition> GetDefinitions<T>()
 		{
 			return GetDefinitions( typeof( T ) );
 		}
@@ -195,7 +254,7 @@ namespace OdinAttributeDefinitions
 		protected internal static List<OdinAttributeDefinition> allDefinitions;
 		protected static Dictionary<Type, List<OdinAttributeDefinition>> typeDefinitions;
 
-		public static IReadOnlyCollection<OdinAttributeDefinition> GetDefinitions( Type type )
+		public static IReadOnlyList<OdinAttributeDefinition> GetDefinitions( Type type )
 		{
 			if ( allDefinitions == null || typeDefinitions == null )
 			{

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace OdinAttributeDefinitions
 {
-	[ScriptedImporter( 1, "oad" )]
+	[ScriptedImporter( 3, "oad" )]
 	public class OdinAttributeDefinitionFileImporter : ScriptedImporter
 	{
 		public override void OnImportAsset( AssetImportContext ctx )
@@ -23,6 +23,7 @@ namespace OdinAttributeDefinitions
 			ctx.AddObjectToAsset( name, definitionFile );
 			ctx.SetMainObject( definitionFile );
 
+			string globalCondition = string.Empty;
 			Type currentType = null;
 			OdinAttributeDefinition currentDefinition = null;
 
@@ -31,8 +32,30 @@ namespace OdinAttributeDefinitions
 				// Strip leading spaces
 				string line = lines[lineIndex].Trim();
 
-				// If the first character is a % sign then it's a type
-				if ( line[0] == '%' )
+				if ( line[0] == '?' ) // If the first character is a ? then this is a condition
+				{
+					var substring = line.Substring( 1 );
+					if ( currentDefinition == null )
+					{
+						if ( string.IsNullOrEmpty( globalCondition ) )
+							globalCondition = substring;
+						else
+							Debug.LogError( $"Only a single global condition per OAD. '{substring}' ignored." );
+					}
+					else
+					{
+						if ( string.IsNullOrEmpty( globalCondition ) && string.IsNullOrEmpty( currentDefinition.requiredCondition ) )
+							currentDefinition.requiredCondition = substring;
+						else
+						{
+							if ( !string.IsNullOrEmpty( globalCondition ) )
+								Debug.LogError( $"Global condition is already set. Local '{substring}' ignored." );
+							if ( !string.IsNullOrEmpty( currentDefinition.requiredCondition ) )
+								Debug.LogError( $"Local condition is already set. '{substring}' ignored." );
+						}
+					}
+				}
+				else if ( line[0] == '%' ) // If the first character is a % sign then it's a type
 				{
 					var substring = line.Substring( 1 );
 					var type = OdinAttributeDefinition.GetTypeFromString( substring );
@@ -46,6 +69,7 @@ namespace OdinAttributeDefinitions
 					currentDefinition = ScriptableObject.CreateInstance<OdinAttributeDefinition>();
 					currentDefinition.name = $"{type.FullName}_OAD";
 					currentDefinition.type = type;
+
 					ctx.AddObjectToAsset( currentDefinition.name, currentDefinition );
 
 					definitionFile.definitions.Add( currentDefinition );
@@ -70,7 +94,16 @@ namespace OdinAttributeDefinitions
 						break;
 					}
 
-					currentDefinition.removedSelfAttributeStrings.Add( substring );
+					if ( line.Length >= 2 && line[1] == '-' ) // -- Means remove all attributes from this type
+					{
+						currentDefinition.removeAllSelfAttributes = true;
+						if ( line.Length >= 3 && line[2] == '-' ) // --- Means remove all attributes from this type and all it's members
+							currentDefinition.removeAllMemberAttributes = true;
+					}
+					else
+					{
+						currentDefinition.removedSelfAttributeStrings.Add( substring );
+					}
 				}
 				// TODO: Add '-' to allow removing attributes
 				else if ( line[0] == '*' ) // *memberName+new LabelWidthAttribute
@@ -92,35 +125,57 @@ namespace OdinAttributeDefinitions
 						break;
 					}
 
-					int useIndex = plusIndex >= 0 ? plusIndex : minusIndex;
-
-					string memberSubstring = substring.Substring( 0, useIndex );
-					if ( useIndex + 1 >= substring.Length )
-					{
-						Debug.LogError( $"{substring}: No attribute found" );
-						break;
-					}
-
-					string attributeSubstring = substring.Substring( useIndex + 1 );
-
-					List<string> attributes = null;
 					if ( plusIndex >= 0 )
 					{
+						string memberSubstring = substring.Substring( 0, plusIndex );
+						if ( plusIndex + 1 >= substring.Length )
+						{
+							Debug.LogError( $"{substring}: No attribute found" );
+							break;
+						}
+
+						string attributeSubstring = substring.Substring( plusIndex + 1 );
+
+						List<string> attributes = null;
 						if ( !currentDefinition.addedMemberAttributeStrings.TryGetValue( memberSubstring, out attributes ) )
 							currentDefinition.addedMemberAttributeStrings[memberSubstring] = attributes = new List<string>();
+
+						attributes.Add( attributeSubstring );
 					}
 					else
 					{
-						if ( !currentDefinition.removedMemberAttributeStrings.TryGetValue( memberSubstring, out attributes ) )
-							currentDefinition.removedMemberAttributeStrings[memberSubstring] = attributes = new List<string>();
-					}
+						string memberSubstring = substring.Substring( 0, minusIndex );
+						if ( minusIndex + 1 >= substring.Length )
+						{
+							Debug.LogError( $"{substring}: No attribute found" );
+							break;
+						}
 
-					attributes.Add( attributeSubstring );
+						string attributeSubstring = substring.Substring( minusIndex + 1 );
+						if ( attributeSubstring.Trim() == "-" ) // Found '--', remove all attributes from member name
+						{
+							currentDefinition.removeMemberAttributesAll.Add( memberSubstring );
+						}
+						else
+						{
+							List<string> attributes = null;
+							if ( !currentDefinition.removedMemberAttributeStrings.TryGetValue( memberSubstring, out attributes ) )
+								currentDefinition.removedMemberAttributeStrings[memberSubstring] = attributes = new List<string>();
+
+							attributes.Add( attributeSubstring );
+						}
+					}
 				}
 				else if ( line[0] == ';' )
 				{
 					continue;
 				}
+			}
+
+			foreach ( var definition in definitionFile.definitions )
+			{
+				if ( string.IsNullOrEmpty( definition.requiredCondition ) )
+					definition.requiredCondition = globalCondition;
 			}
 		}
 	}

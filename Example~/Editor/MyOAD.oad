@@ -1,0 +1,28 @@
+; This is my custom type
+?@OdinAttributeDefinitions.AlternateContextWindow.Drawing
+%MyCustomType
++new HideLabelAttribute()
++new BoxGroupAttribute( "Custom", true, false, 0 )
+;*someField+new ShowDrawerChainAttribute()
+*someField+new LabelTextAttribute( "$someOtherTextMember" )
+
+%TextBasedAttributes
+--
+*serializationData+new HideInInspector()
+*foo--
+*foo+new HorizontalGroupAttribute(0.5f,0,0,0)
+*foo+new InlinePropertyAttribute()
+*foo+new LabelWidthAttribute(40)
+
+*bar--
+*bar+new HorizontalGroupAttribute(0.5f,0,0,0)
+*bar+new InlinePropertyAttribute()
+*bar+new LabelWidthAttribute(40)
+
+*custom+new PropertyOrderAttribute( -1 )
+
+%Foo
+*data+new HideLabelAttribute()
+
+%Bar
+*data+new HideLabelAttribute()
