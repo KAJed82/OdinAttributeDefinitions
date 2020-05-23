@@ -85,3 +85,7 @@ public class TextBasedAttributes : SerializedMonoBehaviour
 ~~~~
 
 ![Example](Images~/TextBasedAttributesExample.png?raw=true "Example")
+
+<h1>Alternate Context Example (from Example~ folder)</h1>
+
+![Example](Images~/AlternateContextExample.png?raw=true "AlternateContextExample")
