@@ -1,0 +1,12 @@
+{
+  "name": "kj.odinattributedefinitions",
+  "version": "1.0.0",
+  "displayName": "Odin Attribute Definitions",
+  "description": "Create Odin Attributes on classes with no code.",
+  "unity": "2019.1",
+  "documentationUrl": "https://github.com/KAJed82/OdinAttributeDefinitions",
+  "author": {
+    "name": "Kailey Joanette",
+    "email": "kailey.joanette@gmail.com"
+  }
+}
