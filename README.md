@@ -1,40 +1,40 @@
-<h1>Usage</h1>
+# Usage
 
-<h3>?</h3>
-<h4>**ONLY SUPPORTED WITH ODIN INSPECTOR v3+**</h4>
+### ?
+#### **ONLY SUPPORTED WITH ODIN INSPECTOR v3+**
 Checks a conditional expression before trying to apply this set of definitions.<br>
 If used before any type attribute defintions it will apply to all attribute definitons in the file.<br>
 If used inside a type attribute definition it will only apply to that type attribute definition.
 
-<h3>%TYPENAME</h3> 
+### %TYPENAME 
 Starts a set of attributes / member attributes for a type<br>
 
-<h3>+new STYLINGATTRIBUTE( params )</h3>
+### +new STYLINGATTRIBUTE( params )
 Write the constructor for the attribute you want to add to this type
 
-<h3>-STYLINGATTRIBUTE</h3>
+### -STYLINGATTRIBUTE
 Write the attribute type you want to remove and all instances will be removed from this type before applying your own<br>
 
-<h3>--</h3>
+### --
 When used on a line by itself after a %TYPENAME this will remove all self attributes before applying your own.
 
-<h3>---</h3>
+### ---
 When used on a line by itself after a %TYPENAME this will remove all self attributes and all member attributes before applying your own.
 
-<h3>*memberName+new STYLINGATTRIBUTE( params )</h3>
+### *memberName+new STYLINGATTRIBUTE( params )
 Write the constructor for the attribute you want to add to members with this name
 
-<h3>*memberName-STYLINGATTRIBUTE</h3>
+### *memberName-STYLINGATTRIBUTE
 Write the attribute type you want to remove and all instances will be removed from members with this name before applying your own
 
-<h3>*memberName--</h3>
+### *memberName--
 Remove all member attributes before applying your own.
 
-<h3>; Some comment text</h3>
+### ; Some comment text
 Comment<br>
 
-<h1>Example</h1>
-filename: MyAttributes.oad<br>
+# Example
+filename: MyAttributes.oad
 
 ~~~~
 ; This is my custom type
@@ -86,6 +86,6 @@ public class TextBasedAttributes : SerializedMonoBehaviour
 
 ![Example](Images~/TextBasedAttributesExample.png?raw=true "Example")
 
-<h1>Alternate Context Example (from Example~ folder)</h1>
+# Alternate Context Example (from Example~ folder)
 
 ![Example](Images~/AlternateContextExample.png?raw=true "AlternateContextExample")
