@@ -8,5 +8,12 @@
   "author": {
     "name": "Kailey Joanette",
     "email": "kailey.joanette@gmail.com"
-  }
+  },
+	"samples": [
+		{
+			"displayName": "Simple Example",
+			"description": "",
+			"path": "Example~"
+		}
+	]
 }
